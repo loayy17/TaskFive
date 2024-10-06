@@ -1,4 +1,7 @@
 import App from '@/App.vue'
+import Cars from '@/Cars.vue'
+import Employees from '@/Employees.vue'
+import HomaPage from '@/HomaPage.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -7,7 +10,19 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: App
+      component: HomaPage,
+      alias: '/Home'
+    },
+    {
+      path: '/Employees',
+      name: 'Employees',
+      props: {data:'data'},
+      component: Employees
+    },
+    {
+      path: '/Cars',
+      name: 'Cars',
+      component: Cars
     },
   ]
 })

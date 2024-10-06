@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h1 class="p-3 pb-10 bg-slate-300">Basic Table</h1>
     <nav>
       <nav
         class="font-medium text-center text-gray-500 border-b border-gray-200 mb-4"
@@ -61,26 +60,24 @@
     <table class="table-fixed w-full">
       <thead>
         <tr>
-          <th>
-            <select name="" id="">
-              <input type="checkbox" />
-            </select>
+          <th class="w-5">
+              <input type="checkbox" name="filterBy" id="filterBy"/>
           </th>
-          <th v-for="col in schema['columns']">{{ col }}</th>
+          <th v-for="col in schema['columns']" class="text-lg">{{ col }}</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="(row, index) in itemsPerPage"
+          v-for="(row, index) in data"
           :key="index"
-          class="border-t-2"
+          class="border-t-2 "
         >
           <td><input class="underline" type="checkbox"/></td>
           <td
             v-for="col in schema['columns']"
             :key="col"
-            class="p-2 flex-shrink"
+            class="p-2 flex-shrink border border-gray-300 overflow-auto"
           >
             <div v-if="row.isEditing">
               <input type="text" v-model="row[col]" :placeholder="col" class="bg-gray-200 rounded text-gray-500"/>
@@ -90,12 +87,12 @@
             </div>
           </td>
           <td class="flex p-3 ml-2">
-            <button @click="editItem(index)">
+            <button>
               <Pencil 
                 class="p-1 mr-2 rounded-lg bg-gray-100 hover:bg-gray-200 "
               />
             </button>
-            <button @click="deleteItem(index)">
+            <button>
               <Trash2
                 class="p-1 mr-2 rounded-lg bg-gray-100 hover:bg-gray-200"
               />
@@ -105,6 +102,7 @@
       </tbody>
     </table>
   </div>
+  <!-- 
   <footer>
     <div
       class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6"
@@ -159,7 +157,6 @@
                 />
               </svg>
             </a>
-            <!-- Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" -->
             <button
               v-for="(number, index) in visiblePageNumbers"
               :key="index"
@@ -196,28 +193,28 @@
         </div>
       </div>
     </div>
-  </footer>
+  </footer> -->
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRef } from "vue";
-import { Pencil, ShowerHead, Trash2 } from "lucide-vue-next";
+import { ref } from "vue";
+import { Pencil, Trash2 } from "lucide-vue-next";
 
 const props = defineProps({
   data: Array,
   schema: Object,
 });
 const emit = defineEmits(["dataFromParent"]);
-const currentPage = ref(1);
-const numItemsPerPage = ref(10);
-const dataFromParent = ref(
-  [...props.data].map((item) => ({ ...item, isEditing: false }))
-);
+// const currentPage = ref(1);
+// const numItemsPerPage = ref(10);
+// const dataFromParent = ref(
+//   [...props.data].map((item) => ({ ...item, isEditing: false }))
+// );
 
 const selectColumn = ref(props.schema["columns"][1]);
 const serachEnter = ref("");
 const currentTap = ref("All");
-const showEdit = ref(false);
+// const showEdit = ref(false);
 const tabs = [
   {
     key: "All",
@@ -233,74 +230,73 @@ const tabs = [
   },
 ];
 
-const numOfTables = computed(() =>
-  Math.ceil(filterDataTable.value.length / numItemsPerPage.value)
-);
-const filterDataTable = computed(() => {
-  return dataFromParent.value.filter((item) =>
-    item[selectColumn.value]
-      .toLowerCase()
-      .includes(serachEnter.value.toLowerCase())
-  );
-});
-const changePage = (page) => {
-  if (page >= 1 && page <= numOfTables.value) {
-    currentPage.value = page;
-  }
-};
+// const numOfTables = computed(() =>
+//   Math.ceil(filterDataTable.value.length / numItemsPerPage.value)
+// );
+// const filterDataTable = computed(() => {
+//   return dataFromParent.value.filter((item) =>
+//     item[selectColumn.value]
+//       .toLowerCase()
+//       .includes(serachEnter.value.toLowerCase())
+//   );
+// });
+// const changePage = (page) => {
+//   if (page >= 1 && page <= numOfTables.value) {
+//     currentPage.value = page;
+//   }
+// };
 const changeTab = (tab) => {
-  console.log(tab);
   currentTap.value = tab;
 };
 
-const itemsPerPage = computed(() => {
-  const startIndex = (currentPage.value - 1) * numItemsPerPage.value;
-  console.log(filterDataTable.value);
-  return filterDataTable.value.slice(
-    startIndex,
-    startIndex + numItemsPerPage.value
-  );
-});
-const visiblePageNumbers = computed(() => {
-  let pageNumbers = [];
-  if (numItemsPerPage.value <= 6) {
-    for (let i = 1; i <= Math.ceil(filterDataTable.value.length / 10); i++) {
-      pageNumbers.push(i);
-    }
-    console.log(pageNumbers);
-  } else {
-    if (currentPage.value < 3) {
-      pageNumbers = [1, 2, 3, 4, 5, "...", numOfTables.value];
-    } else if (currentPage.value >= numOfTables.value - 3) {
-      pageNumbers = [
-        1,
-        "...",
-        numOfTables.value - 4,
-        numOfTables.value - 3,
-        numOfTables.value - 2,
-        numOfTables.value - 1,
-        numOfTables.value,
-      ];
-    } else {
-      pageNumbers = [
-        1,
-        "...",
-        currentPage.value - 1,
-        currentPage.value,
-        currentPage.value + 1,
-        "...",
-        numOfTables.value,
-      ];
-    }
-  }
-  return pageNumbers;
-});
-const deleteItem = (index: number) => {
-  dataFromParent.value = dataFromParent.value.filter((item, i) => i !== index);
-};
-const editItem = (index: number) => {
-  dataFromParent.value[index].isEditing = !dataFromParent.value[index].isEditing;
-};
+// const itemsPerPage = computed(() => {
+//   const startIndex = (currentPage.value - 1) * numItemsPerPage.value;
+//   console.log(filterDataTable.value);
+//   return filterDataTable.value.slice(
+//     startIndex,
+//     startIndex + numItemsPerPage.value
+//   );
+// });
+// const visiblePageNumbers = computed(() => {
+//   let pageNumbers = [];
+//   if (numItemsPerPage.value <= 6) {
+//     for (let i = 1; i <= Math.ceil(filterDataTable.value.length / 10); i++) {
+//       pageNumbers.push(i);
+//     }
+//     console.log(pageNumbers);
+//   } else {
+//     if (currentPage.value < 3) {
+//       pageNumbers = [1, 2, 3, 4, 5, "...", numOfTables.value];
+//     } else if (currentPage.value >= numOfTables.value - 3) {
+//       pageNumbers = [
+//         1,
+//         "...",
+//         numOfTables.value - 4,
+//         numOfTables.value - 3,
+//         numOfTables.value - 2,
+//         numOfTables.value - 1,
+//         numOfTables.value,
+//       ];
+//     } else {
+//       pageNumbers = [
+//         1,
+//         "...",
+//         currentPage.value - 1,
+//         currentPage.value,
+//         currentPage.value + 1,
+//         "...",
+//         numOfTables.value,
+//       ];
+//     }
+//   }
+//   return pageNumbers;
+// });
+// const deleteItem = (index: number) => {
+//   dataFromParent.value = dataFromParent.value.filter((item, i) => i !== index);
+// };
+// const editItem = (index: number) => {
+//   dataFromParent.value[index].isEditing = !dataFromParent.value[index].isEditing;
+// };
 </script>
 
 <style scoped></style>

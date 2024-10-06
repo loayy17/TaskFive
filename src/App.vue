@@ -1,37 +1,58 @@
 <template>
   <div>
-    <v-table :data="your_json" :schema="json_schema" />
-    <v-table :data="your_json_cars" :schema="json_schema_cars" />
+    <nav
+      class="font-medium text-center text-gray-500 border-b border-gray-200 rounded-sm bg-gray-200"
+    >
+      <ul class="flex flex-wrap -mb-px">
+        <router-link
+          :to="tab.label"
+          v-for="tab in tabs"
+          @click="changeTab(tab.label)"
+          :key="tab.key"
+          :class="{
+            'p-4 border-b-2': true,
+            'border-y-transparent': currentTap !== tab.label,
+            'border-b-blue-600 text-blue-600': currentTap === tab.label,
+          }"
+        >
+          <div @click="changeTab(tab.label)">{{ tab.label }}</div>
+        </router-link>
+      </ul>
+    </nav>
+    <router-view></router-view>
   </div>
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
-import { onMounted, ref } from 'vue';
-import vTable from './components/vTable.vue';
+
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 
+const router = useRouter()
+const currentTap = ref("Home");
+const tabs = [
+  {
+    key: "home",
+    label: "Home",
+  },
+  {
+    key: "Employees",
+    label: "Employees",
+  },
+  {
+    key: "Cars",
+    label: "Cars",
+  },
+];
 
 
+const changeTab = (tab: string) => {
+  console.log(tab);
+  currentTap.value = tab;
+};
 
-const your_json = ref([])
-const your_json_cars = ref([])
-
-const json_schema = {
-  columns: ['id', 'first_name', 'last_name', 'email', 'gender', 'ip_address'],
-}
-const json_schema_cars = {
-  columns: ['id', 'car_make', 'car_model_year', 'car_vin'],
-}
-onMounted(async ()=>{
-   const response = await axios('MOCK_DATA.json')
-   your_json.value = await response.data
-   const responseCars = await axios('MOCK_DATA (1).json')
-   your_json_cars.value = await responseCars.data
-   
-  })
+router.push(currentTap.value)
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
