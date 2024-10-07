@@ -16,7 +16,7 @@ const router = createRouter({
     {
       path: '/Employees',
       name: 'Employees',
-      props: {data:'data'},
+      
       component: Employees
     },
     {

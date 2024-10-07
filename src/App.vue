@@ -4,7 +4,7 @@
       class="font-medium text-center text-gray-500 border-b border-gray-200 rounded-sm bg-gray-200"
     >
       <ul class="flex flex-wrap -mb-px">
-        <router-link
+        <router-link 
           :to="tab.label"
           v-for="tab in tabs"
           @click="changeTab(tab.label)"
@@ -26,11 +26,9 @@
 <script setup lang="ts">
 
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
-
-const router = useRouter()
-const currentTap = ref("Home");
+const currentTap = ref(localStorage.getItem('currentTap'));
 const tabs = [
   {
     key: "home",
@@ -48,11 +46,9 @@ const tabs = [
 
 
 const changeTab = (tab: string) => {
-  console.log(tab);
   currentTap.value = tab;
+  localStorage.setItem('currentTap',currentTap.value)
 };
-
-router.push(currentTap.value)
 </script>
 
 <style scoped></style>
