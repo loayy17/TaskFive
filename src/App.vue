@@ -42,6 +42,11 @@ const tabs = [
     key: "Cars",
     label: "Cars",
   },
+  {
+    key: "PaginationDescription",
+    label: "PaginationDescription",
+  },
+
 ];
 
 

@@ -19,11 +19,20 @@
       </ul>
     </nav>
     <div class="flex justify-start">
-      <select class="border p-2 rounded-md shadow-sm shadow-gray-300 focus:bg-gray-200" name="Col" id="col">
+      <select
+        v-model="selectColumn"
+        class="border p-2 rounded-md shadow-sm shadow-gray-300 focus:bg-gray-200"
+        name="Col"
+        id="col"
+      >
         <option value="Select" selected>Select</option>
         <option v-for="col in schema.columns" :value="col">{{ col }}</option>
       </select>
-      <input class="flex-grow border p-2 rounded-md shadow-sm shadow-gray-300 focus:bg-gray-200" type="text" />
+      <input
+        v-model="inputSearch"
+        class="flex-grow border p-2 rounded-md shadow-sm shadow-gray-300 focus:bg-gray-200"
+        type="text"
+      />
     </div>
     <table class="table-fixed w-full">
       <thead>
@@ -82,8 +91,6 @@
 import { computed, ref, watch } from "vue";
 import { Pencil, Trash2 } from "lucide-vue-next";
 import { useRoute } from "vue-router";
-import DataShared from "./DataShared";
-import type { ITab } from "@/types";
 
 // Props & Emits
 const props = defineProps({
@@ -95,20 +102,27 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  currentIndex: {
+    type: Number,
+    default: 1,
+  },
+  pageSize: {
+    type: Number,
+    required: true,
+  },
 });
-
+const emit = defineEmits(['totalFilterData'])
 // Declaration Var Let Const &Refs
-const route = useRoute(); // use route to extract query paramsfrom url 
-const currentPage = ref<Number>(DataShared.value.currentPage);
+const currentIndex = ref<Number>(props.currentIndex);
 const dataFromParent = ref<Array<Object>>(
   [...props.data].map((item) => ({ ...item, isEditing: false }))
 );
-const numItemsPerPage = ref<Number>(Math.ceil(DataShared.value.pageSize));
-// const selectColumn = ref<String>("Select"); // this for select Filter By
+const numItemsPerPage = ref<Number>(Math.ceil(props.pageSize));
+const selectColumn = ref<String>("Select"); // this for select Filter By
 const currentTap = ref<String>("All");
-// const inputSearch = ref<String>(""); // this for search Field
+const inputSearch = ref<String>(""); // this for search Field
 
-const tabs: ITab[] = [
+const tabs = [
   {
     key: "All",
     label: "All",
@@ -125,15 +139,14 @@ const tabs: ITab[] = [
 
 // Computed
 const itemsPerPage = computed((): Array<Object> => {
-  const startIndex: number = (currentPage.value - 1) * numItemsPerPage.value;
+  const startIndex: number = (currentIndex.value - 1) * numItemsPerPage.value;
   return dataFromParent.value.slice(
     startIndex,
     startIndex + numItemsPerPage.value
   );
 });
 
-
-const changeTab = (tab: ITab) => {
+const changeTab = (tab) => {
   currentTap.value = tab;
 };
 
@@ -147,36 +160,27 @@ watch(
     );
   }
 );
-watch(
-  [() => route.query.maxLengthOFTables, () => dataFromParent.value.length],
-  (newLength) => {
-    if (newLength[0] !== undefined && !isNaN(newLength[0])) {
-      DataShared.value.numOfTables = newLength[0];
-    } else {
-      DataShared.value.numOfTables =
-        dataFromParent.value.length / numItemsPerPage.value;
-    }
-  }
-);
 
 watch(
-  () => DataShared.value.currentPage,
+  () => props.currentIndex,
   (newValue) => {
-    currentPage.value = newValue;
+    currentIndex.value = newValue;
   },
-  { immediate: true }
+  { immediate: true, deep: true }
+);
+watch(
+  () => inputSearch.value,
+  (newInput) => {
+    if(selectColumn.value == 'Select'){selectColumn.value='id'}
+    dataFromParent.value = props.data.filter((el)=>{
+      if(selectColumn.value == 'id'){return el[selectColumn.value].toString().includes(newInput)}
+      else {return el[selectColumn.value].toLowerCase().includes(newInput)}
+    })
+    emit('totalFilterData', dataFromParent.value.length);
+  },{immediate:true}
 );
 
-// watch(
-//   () => inputSearch.value,
-//   (newInput) => {
-//     const filteredDataFromParent = dataFromParent.value.filter((el) => {
-//       const columnValue = el[selectColumn.value] == 'select'|| el[selectColumn.value] == 'id'?el[selectColumn.value] == 'id'.toString().toLowerCase() || '':el[selectColumn.value].toString().toLowerCase() || '';
-//       return columnValue.includes(newInput.toLowerCase());
-//     });
-//     dataFromParent.value = filteredDataFromParent;
-//   }
-// );
+
 
 // const visiblePageNumbers = computed(() => {
 //   const totalPages = numOfTables.value;
